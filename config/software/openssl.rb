@@ -41,8 +41,8 @@ build do
           }
         when "aix"
         {
-            "CC" => "xlc -q64",
-            "CXX" => "xlC -q64",
+            "CC" => "xlc_r -q64",
+            "CXX" => "xlC_r -q64",
             "LD" => "ld -b64",
             "CFLAGS" => "-q64 -I#{install_dir}/embedded/include -O",
             "CXXFLAGS" => "-q64 -I#{install_dir}/embedded/include -O",
@@ -50,7 +50,8 @@ build do
             "OBJECT_MODE" => "64",
             "AR" => "/usr/bin/ar",
             "ARFLAGS" => "-X64 cru",
-            "M4" => "/usr/bin/m4",
+            #"M4" => "/usr/bin/m4",
+	    "M4" => "/opt/freeware/bin/m4",
         }
         when "solaris2"
           {

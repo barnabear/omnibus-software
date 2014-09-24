@@ -45,14 +45,30 @@ when "mac_os_x"
   # link to anything in a path given with -Lextra-libs. Normally these
   # would be harmless, except that autoconf treats any output to stderr as
   # a failure when it makes a test program to check your CFLAGS (regardless
-  # of the actual exit code from the compiler).
-  env['CFLAGS'] << " -I#{install_dir}/embedded/include/ncurses -arch x86_64 -m64 -O3 -g -pipe -Qunused-arguments"
-  env['LDFLAGS'] << " -arch x86_64"
+  # of the actual exit code from the compiler)
+  env['CC'] = "xlc_r"
+  env['CXX'] = "xlC_r"
+  env['CXXFLAGS'] = "-I#{install_dir}/embedded/include -O"
+  env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib",
+  env['CFLAGS'] = " -I#{install_dir}/embedded/include/ncurses -arch x86_64 -m64 -O3 -g -pipe -Qunused-arguments"
+  env['LDFLAGS'] = " -arch x86_64"
 when "aix"
   #
   # I believe -qhot was necessary to prevent segfaults in threaded libs
   #
-  env['CFLAGS'] << " -qhot"
+  env['CC'] = "xlc_r"
+  env['CXX'] = "xlC_r"
+#  env['CXXFLAGS'] = "-qlanglvl=extc99 -I#{install_dir}/embedded/include -O"
+  env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib"
+  env['CFLAGS'] = "-qlanglvl=extc99 -I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
+  #env['CXXFLAGS'] = "-I#{install_dir}/embedded/include"
+  env['LD'] = "ld"
+#  env['LDFLAGS'] = "-arch x86_64"
+#  env['CFLAGS'] << " -qlanglvl=extc99 "
+  env['CXXFLAGS'] = "-qlanglvl=extc99"
+  env['ARFLAGS'] = "-X32_64 cru"
+  env['OBJECT_MODE'] = "32"
+  env['M4'] = "/opt/freeware/bin/m4"
   env['warnflags'] = "-qinfo=por"
 else  # including solaris, linux
   env['CFLAGS'] << " -O3 -g -pipe"
@@ -70,7 +86,7 @@ build do
 
   case ohai['platform']
   when "aix"
-    # patch source: "ruby-aix-configure.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
+    patch source: "ruby-aix-configure.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
     # patch source: "ruby_aix_1_9_3_448_ssl_EAGAIN.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
     # our openssl-1.0.1h links against zlib and mkmf tests will fail due to zlib symbols not being
     # found if we do not include -lz.  this later leads to openssl functions being detected as not
@@ -78,6 +94,7 @@ build do
     # and the compile explodes.  this problem may not be unique to AIX, but is severe on AIX.
     # patch source: "ruby_aix_openssl.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
     # --with-opt-dir causes ruby to send bogus commands to the AIX linker
+    configure_command << "--with-out-ext=fiddle"
   when "freebsd"
     configure_command << "--without-execinfo"
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
