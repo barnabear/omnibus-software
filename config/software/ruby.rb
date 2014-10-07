@@ -47,10 +47,6 @@ when "mac_os_x"
   # would be harmless, except that autoconf treats any output to stderr as
   # a failure when it makes a test program to check your CFLAGS (regardless
   # of the actual exit code from the compiler)
-  env['CC'] = "xlc_r"
-  env['CXX'] = "xlC_r"
-  env['CXXFLAGS'] = "-I#{install_dir}/embedded/include -O"
-  env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib",
   env['CFLAGS'] = " -I#{install_dir}/embedded/include/ncurses -arch x86_64 -m64 -O3 -g -pipe -Qunused-arguments"
   env['LDFLAGS'] = " -arch x86_64"
 when "aix"
