@@ -31,6 +31,7 @@ version("1.9.3-p484") { source md5: "8ac0dee72fe12d75c8b2d0ef5d0c2968" }
 version("1.9.3-p547") { source md5: "7531f9b1b35b16f3eb3d7bea786babfd" }
 version("2.1.1")      { source md5: "e57fdbb8ed56e70c43f39c79da1654b2" }
 version("2.1.2")      { source md5: "a5b5c83565f8bd954ee522bd287d2ca1" }
+version("2.1.3")      { source md5: "74a37b9ad90e4ea63c0eed32b9d5b18f" }
 
 source url: "http://cache.ruby-lang.org/pub/ruby/#{version.match(/^(\d+\.\d+)/)[0]}/ruby-#{version}.tar.gz"
 
@@ -59,17 +60,27 @@ when "aix"
   env['CC'] = "xlc_r"
   env['CXX'] = "xlC_r"
 #  env['CXXFLAGS'] = "-qlanglvl=extc99 -I#{install_dir}/embedded/include -O"
-  env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib"
-  env['CFLAGS'] = "-qlanglvl=extc99 -I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
-  #env['CXXFLAGS'] = "-I#{install_dir}/embedded/include"
-  env['LD'] = "ld"
-#  env['LDFLAGS'] = "-arch x86_64"
+#  env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib"
+#  env['CFLAGS'] = "-I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
+#  env['CXXFLAGS'] = "-I#{install_dir}/embedded/include"
+#  env['LD'] = "ld"
+   env['LDSHARED'] = "xlc -G"
+   env['CFLAGS'] = " -g -D_LARGE_FILES -I#{install_dir}/embedded/include/openssl -I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
+   env['XCFLAGS'] = " -DRUBY_EXPORT"
+   env['LDFLAGS'] = "-L#{install_dir}/embedded/lib -Wl,-blibpath:#{install_dir}/embedded/lib:/usr/lib:/lib"
 #  env['CFLAGS'] << " -qlanglvl=extc99 "
-  env['CXXFLAGS'] = "-qlanglvl=extc99"
-  env['ARFLAGS'] = "-X32_64 cru"
-  env['OBJECT_MODE'] = "32"
+  env['CXXFLAGS'] = "-I#{install_dir}/embedded/include/openssl -I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
+  env['CPPFLAGS'] = "-I#{install_dir}/embedded/include/openssl -I#{install_dir}/embedded/include/ncurses -I#{install_dir}/embedded/include"
+#  env['ARFLAGS'] = "-X32_64 cru"
+#  env['OBJECT_MODE'] = "32"
+#  env['M4'] = "/opt/freeware/bin/m4"
+#  env['warnflags'] = "-qinfo=por"
+#  env['CFLAGS'] << " -q64 -qhot"
+  env['SOLIBS'] = "-lm -lc"
+  env['LD'] = "ld"
   env['M4'] = "/opt/freeware/bin/m4"
-  env['warnflags'] = "-qinfo=por"
+#  env['warnflags'] = "-qinfo=por"
+  env['MAKE'] = "make"
 else  # including solaris, linux
   env['CFLAGS'] << " -O3 -g -pipe"
 end
@@ -94,7 +105,10 @@ build do
     # and the compile explodes.  this problem may not be unique to AIX, but is severe on AIX.
     # patch source: "ruby_aix_openssl.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
     # --with-opt-dir causes ruby to send bogus commands to the AIX linker
-    configure_command << "--with-out-ext=fiddle"
+    #configure_command << "--with-out-ext=fiddle"
+    patch source: "ruby-aix-atomic.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
+    patch source: "ruby-aix-vm-core.patch", plevel: 1, patch_command: "/opt/freeware/bin/patch"
+    configure_command << "--host=powerpc-ibm-aix6.1.0.0 --target=powerpc-ibm-aix6.1.0.0 --build=powerpc-ibm-aix6.1.0.0 --enable-pthread --enable-shared --disable-install-doc"
   when "freebsd"
     configure_command << "--without-execinfo"
     configure_command << "--with-opt-dir=#{install_dir}/embedded"
