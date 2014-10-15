@@ -36,6 +36,8 @@ relative_path "ohai"
 build do
   env = with_standard_compiler_flags(with_embedded_path)
 
+  env.delete('LD_RUN_PATH') if aix?
+
   bundle "install --without development", env: env
 
   rake "gem", env: env
